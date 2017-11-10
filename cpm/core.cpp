@@ -148,6 +148,9 @@ namespace cpm
         throw std::runtime_error("Unhandled Solver::Status.");
       }
     }
+    
+    std::cerr << "Total time: " << std::chrono::duration_cast<std::chrono::duration<double> >(std::chrono::steady_clock::now() - _timeStart).count()
+      << std::endl;
   }
 
 } /* namespace cpm */

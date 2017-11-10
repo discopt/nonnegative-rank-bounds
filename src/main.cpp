@@ -59,9 +59,8 @@ int main(int argc, char** argv)
   MaximumWeightRectangleEnumOracle* enumOracle = new MaximumWeightRectangleEnumOracle(slackmatrix, 2);
   core->addOracle(enumOracle);
   
-//   MaximumWeightRectangleIPOracle* heuristicSCIPOracle = new MaximumWeightRectangleIPOracle(slackmatrix, 1);
-//   heuristicSCIPOracle->setDoubleParam("limits/time", 1.0);
-//   heuristicSCIPOracle->setIntParam("limits/bestsol", 2);
+  MaximumWeightRectangleIPOracle* heuristicSCIPOracle = new MaximumWeightRectangleIPOracle(slackmatrix, 1);
+  heuristicSCIPOracle->setIntParam("limits/bestsol", 2);
 //   core->addOracle(heuristicSCIPOracle);
   
   MaximumWeightRectangleIPOracle* exactSCIPOracle = new MaximumWeightRectangleIPOracle(slackmatrix, -1);
@@ -72,7 +71,7 @@ int main(int argc, char** argv)
   core->run();
 
   delete exactSCIPOracle;
-//   delete heuristicSCIPOracle;
+  delete heuristicSCIPOracle;
   delete enumOracle;
   delete core;
 }

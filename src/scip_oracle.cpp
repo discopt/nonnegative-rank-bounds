@@ -18,6 +18,11 @@ MaximumWeightRectangleIPOracle::MaximumWeightRectangleIPOracle(const Slackmatrix
   SCIP_CALL_EXC(SCIPsetObjlimit(_scip, 1.0));
   SCIP_CALL_EXC(SCIPsetBoolParam(_scip, "misc/catchctrlc", false));
   SCIP_CALL_EXC(SCIPsetObjsense(_scip, SCIP_OBJSENSE_MAXIMIZE));
+  
+  // Disable trivial cuts. TODO: Check how worthy cuts look like.
+  
+  SCIP_CALL_EXC(SCIPsetIntParam(_scip, "separating/clique/freq", -1));
+  SCIP_CALL_EXC(SCIPsetIntParam(_scip, "separating/impliedbounds/freq", -1));
 
   _rowVariables.resize(_slackmatrix->numRows);
   for (std::size_t row = 0; row < _slackmatrix->numRows; ++row)
@@ -73,7 +78,7 @@ MaximumWeightRectangleIPOracle::MaximumWeightRectangleIPOracle(const Slackmatrix
     SCIP_CONS* cons = NULL;
     std::stringstream ss;
     ss << "nonzero#" << i << "#row#" << _slackmatrix->nonzeros[i].row;
-    SCIP_CALL_EXC(SCIPcreateConsBasicLinear(_scip, &cons, ss.str().c_str(), 0, NULL, NULL, 0.0, SCIPinfinity(_scip)));
+    SCIP_CALL_EXC(SCIPcreateConsBasicLinear(_scip, &cons, ss.str().c_str(), 0, NULL, NULL, 0.0, 1.0));
     SCIP_CALL_EXC(SCIPaddCoefLinear(_scip, cons, _rowVariables[_slackmatrix->nonzeros[i].row], 1.0));
     SCIP_CALL_EXC(SCIPaddCoefLinear(_scip, cons, _nonzeroVariables[i], -1.0));
     SCIP_CALL_EXC(SCIPaddCons(_scip, cons));
@@ -87,7 +92,7 @@ MaximumWeightRectangleIPOracle::MaximumWeightRectangleIPOracle(const Slackmatrix
     SCIP_CONS* cons = NULL;
     std::stringstream ss;
     ss << "nonzero#" << i << "#column#" << _slackmatrix->nonzeros[i].column;
-    SCIP_CALL_EXC(SCIPcreateConsBasicLinear(_scip, &cons, ss.str().c_str(), 0, NULL, NULL, 0.0, SCIPinfinity(_scip)));
+    SCIP_CALL_EXC(SCIPcreateConsBasicLinear(_scip, &cons, ss.str().c_str(), 0, NULL, NULL, 0.0, 1.0));
     SCIP_CALL_EXC(SCIPaddCoefLinear(_scip, cons, _columnVariables[_slackmatrix->nonzeros[i].column], 1.0));
     SCIP_CALL_EXC(SCIPaddCoefLinear(_scip, cons, _nonzeroVariables[i], -1.0));
     SCIP_CALL_EXC(SCIPaddCons(_scip, cons));
@@ -147,8 +152,17 @@ void MaximumWeightRectangleIPOracle::separate(bool separatePoint, const double* 
     violationLowerBound = bestValue - 1.0;
     violationUpperBound = SCIPgetDualbound(_scip) - 1.0;
   }
-
-//     SCIP_CALL_EXC( SCIPprintBestSol(_scip, stdout, false) );
+  
+//   SCIP_CUT** cuts = NULL;
+//   cuts = SCIPgetPoolCuts(_scip);
+//   for (int i = 0; i < SCIPgetNPoolCuts(_scip); ++i)
+//   {
+//     SCIP_ROW* row = SCIPcutGetRow(cuts[i]);
+//     SCIPprintRow(_scip, row, stderr);
+//     std::cerr << std::endl;
+//   }
+//   SCIPprintStatistics(_scip, stderr);
+//   SCIP_CALL_EXC( SCIPprintBestSol(_scip, stdout, false) );
 
   int numSols = SCIPgetNSols(_scip);
   SCIP_SOL** sols = SCIPgetSols(_scip);
